@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 // Set of Material typography styles to start with
-val LyraTypography = Typography(
+val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -32,20 +32,3 @@ val LyraTypography = Typography(
     )
     */
 )
-
-// Bireysel:
-
-
-// Roboto fontu kullanıldı.
-// Tipografi yapısı için
-// bir adet .md dosyası (konumu, ismi ve içeriği) docsta
-// Bu .md dosyasına uygun tipografi kodlarını
-// yazacak prompt+ bu promptun çalıştırılması ile
-// beraber çıkan sonuç githuba commit edilecek.
-// Commit mesajı promptu içermeli.
-
-
-// "tipografi eklendi
-//
-//
-// Prompt: ""
