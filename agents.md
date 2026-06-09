@@ -1,5 +1,5 @@
-## LyraApp - Online/Offline Müzik Çalar Uygulaması
-### Bu repository LyraApp adında bir müzik çalar uygulamasının kaynak kodlarını içermektedir. Bu agents.md dosyası bu projede çalışan insan/ai herkesin uyması ZORUNDA olduğu genel kuralları içerir.
+# LyraApp - Online/Offline Müzik Çalar Uygulaması
+> Bu repository LyraApp adında bir müzik çalar uygulamasının kaynak kodlarını içermektedir. Bu agents.md dosyası bu projede çalışan insan/ai herkesin uyması ZORUNDA olduğu genel kuralları içerir.
 ---
 
 ## 1) TEKNOLOJİ YIĞINI
@@ -28,3 +28,30 @@ Kod üretmeden önce şunları yapmak zorundasın;
 - Eğer varsa yeni bağımlılıklar matrisi (Hangi kütüphane, versiyon + neden)
 
 - Planı sun, onay almadan asla implementasyona başlama.
+
+### 2.4) MİMARİ KURALLAR (GOVERNANCE)
+
+Mimari/teknik kararlar `docs/decisions.md` dosyasında tutulur; bir karar verirken veya
+değiştirirken bu dosya güncellenmek ZORUNDADIR.
+
+Sunum katmanı **MVI** ile yazılır. Yeni bir ekran/feature MVI ile kodlanırken aşağıdaki
+dökümanlar BAĞLAYICI referanstır ve bunlara uymak ZORUNLUDUR:
+
+- `docs/architecture/mvi-overview.md` — genel prensipler, veri akışı, katman/paket yapısı.
+- `docs/architecture/mvi-contracts.md` — State + Intent + Effect kuralları.
+- `docs/architecture/mvi-viewmodel-rules.md` — ViewModel, UI bağlama (Route/Screen) ve DI kuralları.
+
+Referans implementasyon Login ekranıdır (`ui/auth/login/`). Bu referansı bozacak bir sapma
+gerekiyorsa DUR ve EK ONAY iste (bkz. §2.2).
+
+## 3) ÇIKTI FORMATI
+
+Her implementasyon ya da plan sonrası aşağıdaki çıktı formatına uymak zorundasın.
+
+- Dosya Dökümü vermek zorundasın.
+
+- Resmi bir dil kullanmak zorundasın, emoji kullanman yasak.
+
+- Her implementasyon sonrası eğer mümkünse "Happy-Path Test" ver.
+
+- Bu implementasyon ile alaklı varsa sık yapılan hatalar ve senin implementasyon sırasında aklına gelen önerilerini listelemek zorundasın.
