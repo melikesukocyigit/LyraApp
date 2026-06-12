@@ -16,10 +16,6 @@ import javax.inject.Inject
 
 /**
  * Register ekranının MVI ViewModel'i.
- *
- * Tek giriş noktası [onIntent]'tir. Durum [uiState] üzerinden gözlemlenir; tek seferlik
- * olaylar [effect] kanalından akar. Navigasyon kararları Effect'e dönüştürülür; ViewModel
- * içinde hiçbir Android/Compose/navigasyon bağımlılığı bulunmaz.
  */
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
@@ -38,21 +34,20 @@ class RegisterViewModel @Inject constructor(
             is RegisterIntent.LastNameChanged -> updateForm { it.copy(lastName = intent.value) }
             is RegisterIntent.PhoneNumberChanged -> updateForm { it.copy(phoneNumber = intent.value) }
             is RegisterIntent.PasswordChanged -> updateForm { it.copy(password = intent.value) }
+            is RegisterIntent.ConfirmPasswordChanged -> updateForm { it.copy(confirmPassword = intent.value) } // DÜZELTİLDİ
             is RegisterIntent.TermsAcceptedChanged -> updateForm { it.copy(isTermsAccepted = intent.value) }
             is RegisterIntent.TogglePasswordVisibility -> _uiState.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
             is RegisterIntent.Submit -> submit()
-            is RegisterIntent.BackClicked -> sendEffect(RegisterEffect.NavigateBack)
-            is RegisterIntent.LoginClicked -> sendEffect(RegisterEffect.NavigateToLogin)
+            is RegisterIntent.LoginClicked -> viewModelScope.launch { _effect.send(RegisterEffect.NavigateToLogin) }
         }
     }
 
-    /** Form alanını günceller; güç göstergesi ve buton aktifliğini yeniden türetir. */
     private fun updateForm(transform: (RegisterUiState) -> RegisterUiState) {
         _uiState.update { current ->
             val updated = transform(current)
             updated.copy(
-                passwordStrength = updated.password.passwordStrength(),
                 isRegisterEnabled = updated.isFormValid(),
+                passwordStrength = updated.password.calculateStrength()
             )
         }
     }
@@ -72,41 +67,27 @@ class RegisterViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = false) }
 
             result
-                .onSuccess { _effect.send(RegisterEffect.NavigateToHome) }
+                .onSuccess { _effect.send(RegisterEffect.NavigateToLogin) }
                 .onFailure { error ->
                     _effect.send(RegisterEffect.ShowError(error.message ?: "Kayıt başarısız."))
                 }
         }
     }
 
-    private fun sendEffect(effect: RegisterEffect) {
-        viewModelScope.launch { _effect.send(effect) }
+    private fun String.calculateStrength(): Int {
+        if (isEmpty()) return 0
+        var score = 0
+        if (length >= 8) score++
+        if (any { it.isDigit() }) score++
+        if (any { !it.isLetterOrDigit() }) score++
+        return score.coerceAtMost(3)
     }
 }
 
-/** Kayıt butonunun aktif olması için validasyon (ekran kuralı: en az 8 karakter, bir rakam). */
 private fun RegisterUiState.isFormValid(): Boolean =
     firstName.isNotBlank() &&
             lastName.isNotBlank() &&
-            phoneNumber.isNotBlank() &&
-            password.isPasswordPolicyValid() &&
+            phoneNumber.length >= 10 &&
+            password.length >= 6 &&
+            password == confirmPassword && // Şifrelerin eşleştiğinden emin oluyoruz
             isTermsAccepted
-
-/** Şifre politikası: en az 8 karakter ve en az bir rakam. */
-private fun String.isPasswordPolicyValid(): Boolean =
-    length >= MIN_PASSWORD_LENGTH && any(Char::isDigit)
-
-/**
- * Şifre gücünü 0..[RegisterUiState.PASSWORD_STRENGTH_MAX] aralığında türetir:
- * uzunluk, rakam ve harf ölçütlerinden her biri bir segment doldurur.
- */
-private fun String.passwordStrength(): Int {
-    if (isEmpty()) return 0
-    var score = 0
-    if (length >= MIN_PASSWORD_LENGTH) score++
-    if (any(Char::isDigit)) score++
-    if (any(Char::isLetter)) score++
-    return score.coerceAtMost(RegisterUiState.PASSWORD_STRENGTH_MAX)
-}
-
-private const val MIN_PASSWORD_LENGTH = 8

@@ -16,9 +16,6 @@ import javax.inject.Inject
 
 /**
  * Login ekranının MVI ViewModel'i.
- *
- * Tek giriş noktası [onIntent]'tir. Durum [uiState] üzerinden gözlemlenir; tek seferlik
- * olaylar [effect] kanalından akar.
  */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -41,7 +38,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    /** Form alanını günceller ve giriş butonunun aktifliğini yeniden türetir. */
     private fun updateForm(transform: (LoginUiState) -> LoginUiState) {
         _uiState.update { current ->
             val updated = transform(current)
@@ -67,6 +63,5 @@ class LoginViewModel @Inject constructor(
     }
 }
 
-/** Giriş butonunun aktif olması için minimal validasyon. */
 private fun LoginUiState.isFormValid(): Boolean =
-    phoneNumber.isNotBlank() && password.isNotBlank()
+    phoneNumber.length >= 10 && password.isNotBlank()
